@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using DatingApp.API.AWS;
 using DatingApp.API.Data;
+using DatingApp.API.Util;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -24,7 +26,13 @@ namespace DatingApp.API.Controllers
         {
             var values = await _context.Values.ToListAsync();
 
-            return Ok(values);
+            var reqBody = new { ClientRequestToken = "75341496-0878-440c-9db1-a7006c25a39f", MediaRegion = "us-east-1" };
+
+            var awsResponse = await ExecuteAWSRequests.Run("https://service.chime.aws.amazon.com/meetings", "POST", "chime", "us-east-1", reqBody, string.Empty);
+
+            var responseBody = await HttpHelpers.ReadResponseBody(awsResponse);
+
+            return Ok(responseBody);
         }
 
         // GET api/values/5
