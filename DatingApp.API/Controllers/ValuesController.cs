@@ -7,6 +7,7 @@ using DatingApp.API.Data;
 using DatingApp.API.Util;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using static System.Net.WebRequestMethods;
 
 namespace DatingApp.API.Controllers
 {
@@ -27,12 +28,13 @@ namespace DatingApp.API.Controllers
             var values = await _context.Values.ToListAsync();
 
             var reqBody = new { ClientRequestToken = "75341496-0878-440c-9db1-a7006c25a39f", MediaRegion = "us-east-1" };
+            var awsResponsePOST = await ExecuteAWSRequests.Run("https://service.chime.aws.amazon.com/meetings", Http.Post, "chime", "us-east-1", reqBody, string.Empty);
+            var responseBodyPOST = await HttpHelpers.ReadResponseBody(awsResponsePOST);
 
-            var awsResponse = await ExecuteAWSRequests.Run("https://service.chime.aws.amazon.com/meetings", "POST", "chime", "us-east-1", reqBody, string.Empty);
+            var awsResponseGET = await ExecuteAWSRequests.Run("https://service.chime.aws.amazon.com/meetings", Http.Get, "chime", "us-east-1", null, "max-results=99&next-token=2");
+            var responseBodyGET = await HttpHelpers.ReadResponseBody(awsResponseGET);
 
-            var responseBody = await HttpHelpers.ReadResponseBody(awsResponse);
-
-            return Ok(responseBody);
+            return Ok($"Response Body POST: \n\n {responseBodyPOST}\n\n Response Body GET:\n\n {responseBodyGET}");
         }
 
         // GET api/values/5
