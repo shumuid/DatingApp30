@@ -7,6 +7,7 @@ namespace DatingApp.API
         public static string EMPTY_BODY_SHA256 { get; }
         public static string AWSAccessKey { get; }
         public static string AWSSecretKey { get; }
+        public static string ChimeBaseUrl { get; }
 
         static Settings()
         {
@@ -15,6 +16,7 @@ namespace DatingApp.API
             EMPTY_BODY_SHA256 = awsConfig["EMPTY_BODY_SHA256"];
             AWSAccessKey = awsConfig["AWSAccessKey"];
             AWSSecretKey = awsConfig["AWSSecretKey"];
+            ChimeBaseUrl = awsConfig["ChimeBaseUrl"];
         }
     }
 }

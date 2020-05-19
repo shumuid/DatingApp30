@@ -1,12 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.Serialization.Json;
 using System.Threading.Tasks;
 using DatingApp.API.AWS;
 using DatingApp.API.Data;
+using DatingApp.API.Models;
 using DatingApp.API.Util;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Nancy.Json;
+using Newtonsoft.Json;
 using static System.Net.WebRequestMethods;
 
 namespace DatingApp.API.Controllers
@@ -16,25 +21,32 @@ namespace DatingApp.API.Controllers
     public class ValuesController : ControllerBase
     {
         private readonly DataContext _context;
-        public ValuesController(DataContext context)
+        private readonly IChimeRepository _chimeRepo;
+        public ValuesController(DataContext context, IChimeRepository chimeRepo)
         {
             _context = context;
+            _chimeRepo = chimeRepo;
         }
 
         // GET api/values
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            var values = await _context.Values.ToListAsync();
+            var reqMeetingBody = new { ClientRequestToken = Guid.NewGuid(), MediaRegion = "us-east-1" };
+            var meetingResponse = await _chimeRepo.CreateMeeting(reqMeetingBody);
 
-            var reqBody = new { ClientRequestToken = "75341496-0878-440c-9db1-a7006c25a39f", MediaRegion = "us-east-1" };
-            var awsResponsePOST = await ExecuteAWSRequests.Run("https://service.chime.aws.amazon.com/meetings", Http.Post, "chime", "us-east-1", reqBody, string.Empty);
-            var responseBodyPOST = await HttpHelpers.ReadResponseBody(awsResponsePOST);
+            var responseMeetingBodyPOST = JsonConvert.SerializeObject(meetingResponse);
+
+            var reqAttendeeBody = new { ExternalUserId = Guid.NewGuid() };
+            var attendeeResponse = await _chimeRepo.CreateAttendee(reqAttendeeBody, meetingResponse.Meeting.MeetingId);
+
+            var attendeeResponsePOST = JsonConvert.SerializeObject(attendeeResponse);
 
             var awsResponseGET = await ExecuteAWSRequests.Run("https://service.chime.aws.amazon.com/meetings", Http.Get, "chime", "us-east-1", null, "max-results=99&next-token=2");
             var responseBodyGET = await HttpHelpers.ReadResponseBody(awsResponseGET);
 
-            return Ok($"Response Body POST: \n\n {responseBodyPOST}\n\n Response Body GET:\n\n {responseBodyGET}");
+
+            return Ok($"Response create meeting Body POST: \n\n {responseMeetingBodyPOST}\n\n Response create attendee Body POST: \n\n {attendeeResponsePOST}\n\n Response Body GET:\n\n {responseBodyGET}");
         }
 
         // GET api/values/5
