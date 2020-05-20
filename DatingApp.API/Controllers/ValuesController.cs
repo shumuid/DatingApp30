@@ -32,6 +32,8 @@ namespace DatingApp.API.Controllers
         [HttpGet]
         public async Task<IActionResult> Get()
         {
+            var values = _context.Values.ToList();
+
             var reqMeetingBody = new { ClientRequestToken = Guid.NewGuid(), MediaRegion = "us-east-1" };
             var meetingResponse = await _chimeRepo.CreateMeeting(reqMeetingBody);
 
@@ -46,7 +48,8 @@ namespace DatingApp.API.Controllers
             var responseBodyGET = await HttpHelpers.ReadResponseBody(awsResponseGET);
 
 
-            return Ok($"Response create meeting Body POST: \n\n {responseMeetingBodyPOST}\n\n Response create attendee Body POST: \n\n {attendeeResponsePOST}\n\n Response Body GET:\n\n {responseBodyGET}");
+            //return Ok($"Response create meeting Body POST: \n\n {responseMeetingBodyPOST}\n\n Response create attendee Body POST: \n\n {attendeeResponsePOST}\n\n Response Body GET:\n\n {responseBodyGET}");
+            return Ok(values);
         }
 
         // GET api/values/5

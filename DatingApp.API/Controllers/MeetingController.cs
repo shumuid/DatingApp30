@@ -19,12 +19,20 @@ namespace DatingApp.API.Controllers
             _chimeRepo = chimeRepo;
         }
 
-        [HttpPost("createMeeting")]
+        [HttpPost("createMeeting/{mediaRegion}")]
         public async Task<IActionResult> CreateMeeting(string mediaRegion)
         {
             var reqMeetingBody = new { ClientRequestToken = Guid.NewGuid(), MediaRegion = mediaRegion };
  
             return Ok(await _chimeRepo.CreateMeeting(reqMeetingBody));
+        }
+
+        [HttpPost("createAttendee/{meetingId}")]
+        public async Task<IActionResult> CreateAttendee(string meetingId)
+        {
+            var reqAttendeeBody = new { ExternalUserId = Guid.NewGuid() };
+
+            return Ok(await _chimeRepo.CreateAttendee(reqAttendeeBody, meetingId));
         }
     }
 }
