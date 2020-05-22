@@ -106,6 +106,15 @@ export class MeetingsComponent implements OnInit {
 
     console.log('audio devices', audioInputDevices);
 
+    // An array of MediaDeviceInfo objects
+    audioInputDevices.forEach(mediaDeviceInfo => {
+      console.log(`Device ID: ${mediaDeviceInfo.deviceId} Microphone: ${mediaDeviceInfo.label}`);
+    });
+
+    videoInputDevices.forEach(mediaDeviceInfo => {
+      console.log(`Device ID: ${mediaDeviceInfo.deviceId} Video: ${mediaDeviceInfo.label}`);
+    });
+
   }
 
 }
