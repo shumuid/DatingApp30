@@ -1,3 +1,35 @@
+<div class="col-md-6 mt-2" *ngIf="showMeetingForm">
+  <h4>Join A Meeting</h4>
+  <form #meetingForm="ngForm" id="meetingForm" (ngSubmit)="createMeeting()">
+    <div class="form-group col-md-6">
+      <label for="inputMeeting">Meeting ID</label>
+      <input type="text" class="form-control" id="inputMeeting" name="meetingId" [(ngModel)]="meetingId">
+    </div>
+    <div class="form-group col-md-6">
+      <label for="inputName">Your Name</label>
+      <input type="text" class="form-control" id="inputName" name="name" [(ngModel)]="name">
+    </div>
+    <div class="form-group col-md-6">
+      <label for="inputRegion">Region (us-east-1)</label>
+      <input type="text" class="form-control" id="inputRegion" name="region" [(ngModel)]="region">
+    </div>
+    <div class="form-group col-md-6">
+      <button class="btn btn-primary" type="submit">Continue</button>
+    </div>
+  </form>
+</div>
 <p>
-  <button class="btn btn-primary" (click)="createMeeting()" >Create Meeting</button>
+  MeetingId: {{meetingId}} <br>
+  Name: {{name}} <br>
+  Region: {{region}} <br>
+  ChimeMeetingId: {{meeting?.meetingId}} <br>
+  MeetingResponse: {{jsonMeetingResponse}} <br>
+  AttendeeResponse: {{jsonAttendeeResponse}}
 </p>
+<div class="col-md-6 mt-2" *ngIf="showSelectDevicesForm">
+  <h4>Select devices</h4>
+  <div class="form-group col-md-6">
+    <label>Microphone</label>
+    <select id="audio-input" style="width:308px"></select>
+  </div>
+</div>
