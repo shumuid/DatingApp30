@@ -26,10 +26,38 @@
   MeetingResponse: {{jsonMeetingResponse}} <br>
   AttendeeResponse: {{jsonAttendeeResponse}}
 </p>
-<div class="col-md-6 mt-2" *ngIf="showSelectDevicesForm">
+<div class="container mt-2" *ngIf="showSelectDevicesForm">
   <h4>Select devices</h4>
-  <div class="form-group col-md-6">
-    <label>Microphone</label>
-    <select id="audio-input" style="width:308px"></select>
+  <div class="row">
+    <div class="col-6">
+      <label>Microphone</label>
+      <select [(ngModel)]="selectedAudioInputDeviceId" class="form-control" (change)="onAudioInputChange($event.target.value)">
+        <option *ngFor="let option of audioInputDevices" [value]="option.deviceId">{{option.label}}</option>
+      </select>
+    </div>
+    <div class="col-4">
+      <label>Preview</label>
+      <div class="progress">
+        <div id="audio-preview" class="progress-bar bg-success" [style.width]="audioPreviewWitdh" [style.transitionDuration]="audioPreviewTransitionDuration" role="progressbar" [attr.aria-valuenow]="audioPreviewAriaValueNow" aria-valuemin="0" aria-valuemax="100"></div>
+      </div>
+    </div>
   </div>
+  <div class="row">
+    <div class="col-6">
+      <label>Camera</label>
+      <select [(ngModel)]="selectedVideoInputDeviceId" class="form-control" (change)="onVideoInputChange($event.target.value)">
+        <option *ngFor="let option of videoInputDevices" [value]="option.deviceId">{{option.label}}</option>
+      </select>
+    </div>
+    <div class="col-4" style="width:137px;height:82px">
+      <video id="video-preview" class="w-100 h-100" style="width:137px;height:82px;border-radius:8px"></video>
+    </div>
+  </div>
+  <p>
+    SelectedAudioInputDeviceId: {{selectedAudioInputDeviceId}} <br>
+    SelectedVideoInputDeviceId: {{selectedVideoInputDeviceId}} <br>
+  </p>  
 </div>
+ 
+
+
