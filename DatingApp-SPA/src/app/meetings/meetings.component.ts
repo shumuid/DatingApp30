@@ -10,7 +10,9 @@ import {
   DefaultMeetingSession,
   LogLevel,
   MeetingSessionConfiguration,
-  AudioVideoFacade
+  AudioVideoFacade,
+  DefaultAudioMixController,
+  TimeoutScheduler
 } from 'amazon-chime-sdk-js';
 
 @Component({
@@ -49,6 +51,8 @@ export class MeetingsComponent implements OnInit {
   selectedAudioInputDeviceInfo: MediaDeviceInfo;
   selectedVideoInputDeviceId: string;
   selectedVideoInputDeviceInfo: MediaDeviceInfo;
+  selectedAudioOutputDeviceId: string;
+  selectedAudioOutputDeviceInfo: MediaDeviceInfo;
 
   audioPreviewAriaValueNow: number;
   audioPreviewWitdh: string;
@@ -141,6 +145,14 @@ export class MeetingsComponent implements OnInit {
 
       this.startVideoPreview();
     }
+
+    // to do alert user if there is no audio output device detected
+    if(this.audioOutputDevices.length > 0){
+      this.selectedAudioOutputDeviceId = this.audioOutputDevices[0].deviceId;
+      this.selectedAudioOutputDeviceInfo = this.audioOutputDevices[0];
+
+      await this.getInputDevicePermission(this.selectedAudioOutputDeviceId, 'audioOutput');
+    }
   }
 
   onAudioInputChange = async (deviceId: string) => {
@@ -163,6 +175,38 @@ export class MeetingsComponent implements OnInit {
     this.startVideoPreview();
   }
 
+  onAudioOutputChange = async (deviceId: string) => {
+    this.selectedAudioOutputDeviceInfo = this.audioOutputDevices.filter(x=> x.deviceId === deviceId)[0];
+
+    console.log('selectedAudioOutputDeviceInfo: ',this.selectedAudioOutputDeviceInfo);
+
+    await this.getInputDevicePermission(deviceId, 'audioOutput');
+  }
+
+  onVideoInputQualityChange = (qualityValue: string) => {
+    switch (qualityValue) {
+      case '360p':
+        this.audioVideo.chooseVideoInputQuality(640, 360, 15, 600);
+        break;
+      case '540p':
+        this.audioVideo.chooseVideoInputQuality(960, 540, 15, 1400);
+        break;
+      case '720p':
+        this.audioVideo.chooseVideoInputQuality(1280, 720, 15, 1400);
+        break;
+    }
+    console.log('video qualityValue: ', qualityValue);
+    console.log('audioVideo: ', this.audioVideo);
+    this.startVideoPreview();
+  }
+
+  testSound = () => {
+    const audioOutput = document.getElementById('audio-output') as HTMLSelectElement;
+    // tslint:disable-next-line: no-unused-expression
+    console.log(audioOutput.value);
+    new TestSound(audioOutput.value);
+  }
+
   private getInputDevicePermission = async (deviceId: string, deviceType: string) => {
     switch(deviceType){
       case 'audioInput':
@@ -171,7 +215,11 @@ export class MeetingsComponent implements OnInit {
       break;
       case 'videoInput':
         const videoInputDevicePermissionInfo = await this.meetingSession.audioVideo.chooseVideoInputDevice(deviceId);
-        console.log('audioInputDevicePermissionInfo: ', videoInputDevicePermissionInfo);
+        console.log('videoInputDevicePermissionInfo: ', videoInputDevicePermissionInfo);
+      break;
+      case 'audioOutput':
+        const audioOutPutDevicePermissionInfo = await this.meetingSession.audioVideo.chooseAudioOutputDevice(deviceId);
+        console.log('audioOutputDevicePermissionInfo: ', audioOutPutDevicePermissionInfo);
       break;
       default: break;
     }
@@ -224,5 +272,41 @@ export class MeetingsComponent implements OnInit {
     const htmlVideoPreviewElement = document.getElementById('video-preview') as HTMLVideoElement;
     this.audioVideo.startVideoPreviewForVideoInput(htmlVideoPreviewElement);
   }
+}
 
+
+// helper classes
+class TestSound {
+  constructor(
+    sinkId: string | null,
+    frequency: number = 440,
+    durationSec: number = 1,
+    rampSec: number = 0.1,
+    maxGainValue: number = 0.1
+  ) {
+    // @ts-ignore
+    const audioContext: AudioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const gainNode = audioContext.createGain();
+    gainNode.gain.value = 0;
+    const oscillatorNode = audioContext.createOscillator();
+    oscillatorNode.frequency.value = frequency;
+    oscillatorNode.connect(gainNode);
+    const destinationStream = audioContext.createMediaStreamDestination();
+    gainNode.connect(destinationStream);
+    const currentTime = audioContext.currentTime;
+    const startTime = currentTime + 0.1;
+    gainNode.gain.linearRampToValueAtTime(0, startTime);
+    gainNode.gain.linearRampToValueAtTime(maxGainValue, startTime + rampSec);
+    gainNode.gain.linearRampToValueAtTime(maxGainValue, startTime + rampSec + durationSec);
+    gainNode.gain.linearRampToValueAtTime(0, startTime + rampSec * 2 + durationSec);
+    oscillatorNode.start();
+    const audioMixController = new DefaultAudioMixController();
+    // @ts-ignore
+    audioMixController.bindAudioDevice({ deviceId: sinkId });
+    audioMixController.bindAudioElement(new Audio());
+    audioMixController.bindAudioStream(destinationStream.stream);
+    new TimeoutScheduler((rampSec * 2 + durationSec + 1) * 1000).start(() => {
+      audioContext.close();
+    });
+  }
 }

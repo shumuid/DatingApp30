@@ -49,13 +49,39 @@
         <option *ngFor="let option of videoInputDevices" [value]="option.deviceId">{{option.label}}</option>
       </select>
     </div>
-    <div class="col-4" style="width:137px;height:82px">
-      <video id="video-preview" class="w-100 h-100" style="width:137px;height:82px;border-radius:8px"></video>
+    <div class="col-4" style="margin-top:30px">
+      <video id="video-preview" style="width:350px"></video>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-8">
+      <select id="video-input-quality" (change)="onVideoInputQualityChange($event.target.value)" class="custom-select" style="width:308px">
+        <option value="360p">360p (nHD) @ 15 fps (600 Kbps max)</option>
+        <option value="540p" selected>540p (qHD) @ 15 fps (1.4 Mbps max)</option>
+        <option value="720p">720p (HD) @ 15 fps (1.4 Mbps max)</option>
+      </select>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-6">
+      <label>Speaker</label>
+      <select id="audio-output" [(ngModel)]="selectedAudioOutputDeviceId" class="form-control" (change)="onAudioOutputChange($event.target.value)">
+        <option *ngFor="let option of audioOutputDevices" [value]="option.deviceId">{{option.label}}</option>
+      </select>
+    </div>
+    <div class="col-4" style="margin-top:30px">
+      <button (click)="testSound()" class="btn btn-outline-primary" style="width:350px">Test</button>
+    </div>
+  </div>
+  <div class="row mt-3">
+    <div class="col-10">
+      <button class="btn btn-primary" style="width:100%">Join</button>
     </div>
   </div>
   <p>
     SelectedAudioInputDeviceId: {{selectedAudioInputDeviceId}} <br>
     SelectedVideoInputDeviceId: {{selectedVideoInputDeviceId}} <br>
+    SelectedAudioOutputDeviceId: {{selectedAudioOutputDeviceId}} <br>
   </p>  
 </div>
  
