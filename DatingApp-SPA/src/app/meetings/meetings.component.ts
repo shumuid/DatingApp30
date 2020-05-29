@@ -287,7 +287,6 @@ export class MeetingsComponent implements OnInit {
     const audioElement = document.getElementById('meeting-audio') as HTMLAudioElement;
     this.meetingSession.audioVideo.bindAudioElement(audioElement);
     this.meetingSession.audioVideo.addObserver(this.observer);
-    this.observer.audioVideoDidStart();
   }
 
   // mute unmute microphone
@@ -321,11 +320,15 @@ export class MeetingsComponent implements OnInit {
 
       // const videoObserver = { };
 
-      // this.meetingSession.audioVideo.addObserver(videoObserver);
+      this.meetingSession.audioVideo.addObserver(this.observer);
 
       const startedLocalVideoTile = this.audioVideo.startLocalVideoTile();
 
       console.log('startedLocalVideoTile:', startedLocalVideoTile);
+
+      // to do remove
+      // const htmlVideoPreviewElement = document.getElementById('video-16') as HTMLVideoElement;
+      // this.audioVideo.startVideoPreviewForVideoInput(htmlVideoPreviewElement);
     }
     else
     {
