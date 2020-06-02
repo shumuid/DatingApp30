@@ -17,4 +17,12 @@ constructor(private http: HttpClient) { }
   createAttendee(meetingId: string) {
     return this.http.post(`${this.baseUrl}meeting/createAttendee/${meetingId}`, {});
   }
+
+  joinMeeting(mediaRegion: string, meetingTitle: string) {
+    return this.http.post(`${this.baseUrl}meeting/joinMeeting/${mediaRegion}/${meetingTitle}`, {});
+  }
+
+  getAttendee(meetingId: string, attendeeId: string) {
+    return this.http.get(`${this.baseUrl}meeting/getAttendee/${meetingId}/${attendeeId}`);
+  }
 }

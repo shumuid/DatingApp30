@@ -10,5 +10,6 @@ namespace DatingApp.API.Data
     {
         Task<MeetingDto> CreateMeeting<T>(T requestBody) where T : class;
         Task<AttendeeDto> CreateAttendee<T>(T requestBody, string meetingId) where T : class;
+        Task<AttendeeDto> GetAttendee(string meetingId, string attendeeId);
     }
 }

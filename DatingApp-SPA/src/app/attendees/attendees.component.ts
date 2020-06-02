@@ -59,6 +59,7 @@ export class AttendeesComponent implements OnInit, AudioVideoObserver, DeviceCha
   roster: any = {};
   tileIndexToTileId: { [id: number]: number } = {};
   tileIdToTileIndex: { [id: number]: number } = {};
+  chimeMeetingId: string;
 
   cameraDeviceIds: string[] = [];
   microphoneDeviceIds: string[] = [];
@@ -114,6 +115,7 @@ export class AttendeesComponent implements OnInit, AudioVideoObserver, DeviceCha
           try {
             chimeMeetingId = await this.authenticate();
             alert(chimeMeetingId);
+            this.chimeMeetingId = chimeMeetingId;
           } catch (error) {
             (document.getElementById(
               'failed-meeting'
@@ -145,7 +147,7 @@ export class AttendeesComponent implements OnInit, AudioVideoObserver, DeviceCha
             this.log('no video input device selected');
           }
           await this.openAudioOutputFromSelection();
-          this.hideProgress('progress-authenticate');
+          // this.hideProgress('progress-authenticate');
         }
       );
     });
@@ -204,13 +206,12 @@ export class AttendeesComponent implements OnInit, AudioVideoObserver, DeviceCha
       e.preventDefault();
       new AsyncScheduler().start(async () => {
         try {
-          this.showProgress('progress-join');
           await this.join();
           this.audioVideo.stopVideoPreviewForVideoInput(
             document.getElementById('video-preview') as HTMLVideoElement
           );
           this.audioVideo.chooseVideoInputDevice(null);
-          this.hideProgress('progress-join');
+          // this.hideProgress('progress-join');
           this.displayButtonStates();
           this.switchToFlow('flow-meeting');
         } catch (error) {
@@ -397,23 +398,15 @@ export class AttendeesComponent implements OnInit, AudioVideoObserver, DeviceCha
       const on = this.buttonStates[button];
       element.classList.add(on ? 'btn-success' : 'btn-outline-secondary');
       element.classList.remove(on ? 'btn-outline-secondary' : 'btn-success');
-      (element.firstElementChild as SVGElement).classList.add(on ? 'svg-active' : 'svg-inactive');
-      (element.firstElementChild as SVGElement).classList.remove(
-        on ? 'svg-inactive' : 'svg-active'
-      );
+      // (element.firstElementChild as SVGElement).classList.add(on ? 'svg-active' : 'svg-inactive');
+      // (element.firstElementChild as SVGElement).classList.remove(
+      //   on ? 'svg-inactive' : 'svg-active'
+      // );
       if (drop) {
         drop.classList.add(on ? 'btn-success' : 'btn-outline-secondary');
         drop.classList.remove(on ? 'btn-outline-secondary' : 'btn-success');
       }
     }
-  }
-
-  showProgress(id: string): void {
-    (document.getElementById(id) as HTMLDivElement).style.visibility = 'visible';
-  }
-
-  hideProgress(id: string): void {
-    (document.getElementById(id) as HTMLDivElement).style.visibility = 'hidden';
   }
 
   switchToFlow(flow: string): void {
@@ -422,6 +415,10 @@ export class AttendeesComponent implements OnInit, AudioVideoObserver, DeviceCha
       e => ((e as HTMLDivElement).style.display = 'none')
     );
     const element = document.getElementById(flow);
+    if (flow === 'flow-meeting') {
+      alert('flow-meeting');
+      console.log('flow meeting:',element);
+    }
     (document.getElementById(flow) as HTMLDivElement).style.display = 'block';
     if (flow === 'flow-devices') {
       console.log('startAudioPreview');
@@ -652,14 +649,19 @@ export class AttendeesComponent implements OnInit, AudioVideoObserver, DeviceCha
             this.roster[attendeeId].signalStrength = Math.round(signalStrength * 100);
           }
           if (!this.roster[attendeeId].name) {
-            const response = await fetch(
-              `${AttendeesComponent.BASE_URL}attendee?title=${encodeURIComponent(
-                this.meeting
-              )}&attendee=${encodeURIComponent(attendeeId)}`
-            );
-            const json = await response.json();
-            const name = json.AttendeeInfo.Name;
-            this.roster[attendeeId].name = name ? name : '';
+            console.log('Costin trying to get attendee response ', `${AttendeesComponent.BASE_URL}attendee?title=${encodeURIComponent(this.meeting)}&attendee=${encodeURIComponent(attendeeId)}`);
+            // const response = await fetch(
+            //   `${AttendeesComponent.BASE_URL}attendee?title=${encodeURIComponent(
+            //     this.meeting
+            //   )}&attendee=${encodeURIComponent(attendeeId)}`
+            // );
+            // const response = this.chimeService.getAttendee(this.chimeMeetingId, attendeeId).toPromise();
+            // const json = await response;
+            // console.log('Costin attendee response: ', json);
+            // const name = json.AttendeeInfo.Name;
+            // this.roster[attendeeId].name = name ? name : '';
+
+            this.roster[attendeeId].name = this.name ? this.name : '';
           }
           this.updateRoster();
         }
@@ -697,21 +699,45 @@ export class AttendeesComponent implements OnInit, AudioVideoObserver, DeviceCha
 
   // eslint-disable-next-line
   async joinMeeting(): Promise<any> {
-    const response = await fetch(
-      `${AttendeesComponent.BASE_URL}join?title=${encodeURIComponent(
-        this.meeting
-      )}&name=${encodeURIComponent(this.name)}&region=${encodeURIComponent(this.region)}`,
-      {
-        method: 'POST',
+    // const response = await fetch(
+    //   `${AttendeesComponent.BASE_URL}join?title=${encodeURIComponent(
+    //     this.meeting
+    //   )}&name=${encodeURIComponent(this.name)}&region=${encodeURIComponent(this.region)}`,
+    //   {
+    //     method: 'POST',
+    //   }
+    // );
+    // const json = await response.json();
+    // console.log('COSTIN json:', json);
+    // // COSTIN this is where we create meeting and attendee in the same call
+    // if (json.error) {
+    //   throw new Error(`Server error: ${json.error}`);
+    // }
+    const response = this.chimeService.joinMeeting(this.region, this.meeting).toPromise();
+    const json = await response;
+    const objectToReturn = {
+      JoinInfo: {
+        Meeting: {
+          MeetingId: json.joinInfo.meeting.meetingId,
+          MediaPlacement: {
+            AudioHostUrl: json.joinInfo.meeting.mediaPlacement.audioHostUrl,
+            ScreenDataUrl: json.joinInfo.meeting.mediaPlacement.screenDataUrl,
+            ScreenSharingUrl: json.joinInfo.meeting.mediaPlacement.screenSharingUrl,
+            ScreenViewingUrl: json.joinInfo.meeting.mediaPlacement.screenViewingUrl,
+            SignalingUrl: json.joinInfo.meeting.mediaPlacement.signalingUrl,
+            TurnControlUrl: json.joinInfo.meeting.mediaPlacement.turnControlUrl
+          }},
+        Attendee: {
+            ExternalUserId: json.joinInfo.attendee.externalUserId,
+            AttendeeId: json.joinInfo.attendee.attendeeId,
+            JoinToken: json.joinInfo.attendee.joinToken
+          },
+        Title: json.joinInfo.title
       }
-    );
-    const json = await response.json();
-    console.log('COSTIN json:', json);
-    // COSTIN this is where we create meeting and attendee in the same call
-    if (json.error) {
-      throw new Error(`Server error: ${json.error}`);
     }
-    return json;
+    console.log('Costin json:', json);
+    console.log('Costin objectToReturn:', objectToReturn);
+    return objectToReturn;
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
