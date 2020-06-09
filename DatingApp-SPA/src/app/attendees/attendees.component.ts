@@ -63,14 +63,13 @@ export class AttendeesComponent implements OnInit, AudioVideoObserver, DeviceCha
 
   cameraDeviceIds: string[] = [];
   microphoneDeviceIds: string[] = [];
+  meetingInfo: any = {};
 
   buttonStates: { [key: string]: boolean } = {
     'button-microphone': true,
     'button-camera': false,
-    'button-speaker': true,
     'button-screen-share': false,
     'button-screen-view': false,
-    'button-pause-screen-share': false,
   };
 
   // feature flags
@@ -114,7 +113,6 @@ export class AttendeesComponent implements OnInit, AudioVideoObserver, DeviceCha
 
           try {
             chimeMeetingId = await this.authenticate();
-            alert(chimeMeetingId);
             this.chimeMeetingId = chimeMeetingId;
           } catch (error) {
             (document.getElementById(
@@ -255,7 +253,6 @@ export class AttendeesComponent implements OnInit, AudioVideoObserver, DeviceCha
     buttonScreenShare.addEventListener('click', () => {
       new AsyncScheduler().start(async () => {
         const button1 = 'button-screen-share';
-        const button2 = 'button-pause-screen-share';
         if (this.buttonStates[button1]) {
           this.meetingSession.screenShare
             .stop()
@@ -264,7 +261,6 @@ export class AttendeesComponent implements OnInit, AudioVideoObserver, DeviceCha
             })
             .finally(() => {
               this.buttonStates[button1] = false;
-              this.buttonStates[button2] = false;
               this.displayButtonStates();
             });
         } else {
@@ -272,7 +268,6 @@ export class AttendeesComponent implements OnInit, AudioVideoObserver, DeviceCha
           const observer: ScreenShareFacadeObserver = {
             didStopScreenSharing(): void {
               self.buttonStates[button1] = false;
-              self.buttonStates[button2] = false;
               self.displayButtonStates();
             },
           };
@@ -281,50 +276,6 @@ export class AttendeesComponent implements OnInit, AudioVideoObserver, DeviceCha
             this.buttonStates[button1] = true;
             this.displayButtonStates();
           });
-        }
-      });
-    });
-
-    const buttonPauseScreenShare = document.getElementById('button-pause-screen-share');
-    buttonPauseScreenShare.addEventListener('click', () => {
-      new AsyncScheduler().start(async () => {
-        const button = 'button-pause-screen-share';
-        if (this.buttonStates[button]) {
-          this.meetingSession.screenShare.unpause().then(() => {
-            this.buttonStates[button] = false;
-            this.displayButtonStates();
-          });
-        } else {
-          const self = this;
-          const observer: ScreenShareFacadeObserver = {
-            didUnpauseScreenSharing(): void {
-              self.buttonStates[button] = false;
-              self.displayButtonStates();
-            },
-          };
-          this.meetingSession.screenShare.registerObserver(observer);
-          this.meetingSession.screenShare
-            .pause()
-            .then(() => {
-              this.buttonStates[button] = true;
-              this.displayButtonStates();
-            })
-            .catch(error => {
-              this.log(error);
-            });
-        }
-      });
-    });
-
-    const buttonSpeaker = document.getElementById('button-speaker');
-    buttonSpeaker.addEventListener('click', _e => {
-      new AsyncScheduler().start(async () => {
-        if (this.toggleButton('button-speaker')) {
-          this.audioVideo.bindAudioElement(
-            document.getElementById('meeting-audio') as HTMLAudioElement
-          );
-        } else {
-          this.audioVideo.unbindAudioElement();
         }
       });
     });
@@ -398,10 +349,6 @@ export class AttendeesComponent implements OnInit, AudioVideoObserver, DeviceCha
       const on = this.buttonStates[button];
       element.classList.add(on ? 'btn-success' : 'btn-outline-secondary');
       element.classList.remove(on ? 'btn-outline-secondary' : 'btn-success');
-      // (element.firstElementChild as SVGElement).classList.add(on ? 'svg-active' : 'svg-inactive');
-      // (element.firstElementChild as SVGElement).classList.remove(
-      //   on ? 'svg-inactive' : 'svg-active'
-      // );
       if (drop) {
         drop.classList.add(on ? 'btn-success' : 'btn-outline-secondary');
         drop.classList.remove(on ? 'btn-outline-secondary' : 'btn-success');
@@ -416,7 +363,6 @@ export class AttendeesComponent implements OnInit, AudioVideoObserver, DeviceCha
     );
     const element = document.getElementById(flow);
     if (flow === 'flow-meeting') {
-      alert('flow-meeting');
       console.log('flow meeting:',element);
     }
     (document.getElementById(flow) as HTMLDivElement).style.display = 'block';
@@ -619,8 +565,6 @@ export class AttendeesComponent implements OnInit, AudioVideoObserver, DeviceCha
 
   setupSubscribeToAttendeeIdPresenceHandler(): void {
     const handler = (attendeeId: string, present: boolean): void => {
-      alert(attendeeId);
-      alert(present);
       this.log(`${attendeeId} present = ${present}`);
       if (!present) {
         delete this.roster[attendeeId];
@@ -649,25 +593,14 @@ export class AttendeesComponent implements OnInit, AudioVideoObserver, DeviceCha
             this.roster[attendeeId].signalStrength = Math.round(signalStrength * 100);
           }
           if (!this.roster[attendeeId].name) {
-            console.log('Costin trying to get attendee response ', `${AttendeesComponent.BASE_URL}attendee?title=${encodeURIComponent(this.meeting)}&attendee=${encodeURIComponent(attendeeId)}`);
-            // const response = await fetch(
-            //   `${AttendeesComponent.BASE_URL}attendee?title=${encodeURIComponent(
-            //     this.meeting
-            //   )}&attendee=${encodeURIComponent(attendeeId)}`
-            // );
-            // const response = this.chimeService.getAttendee(this.chimeMeetingId, attendeeId).toPromise();
-            // const json = await response;
-            // console.log('Costin attendee response: ', json);
-            // const name = json.AttendeeInfo.Name;
-            // this.roster[attendeeId].name = name ? name : '';
-
-            this.roster[attendeeId].name = this.name ? this.name : '';
+            // COSTIN: TO DO get attendee name from a meeting record in DataBase and replace the attendeeId
+            this.roster[attendeeId].name = attendeeId ?  attendeeId: '';
           }
           this.updateRoster();
+          console.log('COSTIN ROSTER', this.roster);
         }
       );
     };
-    alert(handler);
     this.audioVideo.realtimeSubscribeToAttendeeIdPresence(handler);
     const activeSpeakerHandler = (attendeeIds: string[]): void => {
       // tslint:disable-next-line: forin
@@ -699,20 +632,6 @@ export class AttendeesComponent implements OnInit, AudioVideoObserver, DeviceCha
 
   // eslint-disable-next-line
   async joinMeeting(): Promise<any> {
-    // const response = await fetch(
-    //   `${AttendeesComponent.BASE_URL}join?title=${encodeURIComponent(
-    //     this.meeting
-    //   )}&name=${encodeURIComponent(this.name)}&region=${encodeURIComponent(this.region)}`,
-    //   {
-    //     method: 'POST',
-    //   }
-    // );
-    // const json = await response.json();
-    // console.log('COSTIN json:', json);
-    // // COSTIN this is where we create meeting and attendee in the same call
-    // if (json.error) {
-    //   throw new Error(`Server error: ${json.error}`);
-    // }
     const response = this.chimeService.joinMeeting(this.region, this.meeting).toPromise();
     const json = await response;
     const objectToReturn = {
@@ -735,8 +654,9 @@ export class AttendeesComponent implements OnInit, AudioVideoObserver, DeviceCha
         Title: json.joinInfo.title
       }
     }
-    console.log('Costin json:', json);
-    console.log('Costin objectToReturn:', objectToReturn);
+    this.meetingInfo = objectToReturn;
+    alert('COSTIN meetingId: ' + objectToReturn.JoinInfo.Meeting.MeetingId);
+    alert('COSTIN attendeeId: ' + objectToReturn.JoinInfo.Attendee.AttendeeId);
     return objectToReturn;
   }
 
@@ -871,21 +791,11 @@ export class AttendeesComponent implements OnInit, AudioVideoObserver, DeviceCha
     const genericName = 'Microphone';
     const additionalDevices = ['None', '440 Hz'];
     const audioddd = await this.audioVideo.listAudioInputDevices();
-    console.log('audioddd', audioddd);
     this.populateDeviceList(
       'audio-input',
       genericName,
       await this.audioVideo.listAudioInputDevices(),
       additionalDevices
-    );
-    this.populateInMeetingDeviceList(
-      'dropdown-menu-microphone',
-      genericName,
-      await this.audioVideo.listAudioInputDevices(),
-      additionalDevices,
-      async (name: string) => {
-        await this.audioVideo.chooseAudioInputDevice(this.audioInputSelectionToDevice(name));
-      }
     );
   }
 
@@ -897,19 +807,6 @@ export class AttendeesComponent implements OnInit, AudioVideoObserver, DeviceCha
       genericName,
       await this.audioVideo.listVideoInputDevices(),
       additionalDevices
-    );
-    this.populateInMeetingDeviceList(
-      'dropdown-menu-camera',
-      genericName,
-      await this.audioVideo.listVideoInputDevices(),
-      additionalDevices,
-      async (name: string) => {
-        try {
-          await this.openVideoInputFromSelection(name, false);
-        } catch (err) {
-          this.log('no video input device selected');
-        }
-      }
     );
     const cameras = await this.audioVideo.listVideoInputDevices();
     this.cameraDeviceIds = cameras.map(deviceInfo => {
@@ -925,15 +822,6 @@ export class AttendeesComponent implements OnInit, AudioVideoObserver, DeviceCha
       genericName,
       await this.audioVideo.listAudioOutputDevices(),
       additionalDevices
-    );
-    this.populateInMeetingDeviceList(
-      'dropdown-menu-speaker',
-      genericName,
-      await this.audioVideo.listAudioOutputDevices(),
-      additionalDevices,
-      async (name: string) => {
-        await this.audioVideo.chooseAudioOutputDevice(name);
-      }
     );
   }
 
@@ -1447,4 +1335,3 @@ class TestSound {
     });
   }
 }
-

@@ -32,5 +32,12 @@ namespace DatingApp.API.Data
             var responseBodyGET = await HttpHelpers.ReadResponseBody(awsResponseGET);
             return JsonConvert.DeserializeObject<AttendeeDto>(responseBodyGET);
         }
+
+        public async Task<MeetingDto> GetMeeting(string meetingId)
+        {
+            var awsResponseGET = await ExecuteAWSRequests.Run($"{Settings.ChimeBaseUrl}/meetings/{meetingId}", Http.Get, "chime", "us-east-1", null, string.Empty);
+            var responseBodyGET = await HttpHelpers.ReadResponseBody(awsResponseGET);
+            return JsonConvert.DeserializeObject<MeetingDto>(responseBodyGET);
+        }
     }
 }

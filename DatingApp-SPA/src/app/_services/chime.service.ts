@@ -22,7 +22,7 @@ constructor(private http: HttpClient) { }
     return this.http.post(`${this.baseUrl}meeting/joinMeeting/${mediaRegion}/${meetingTitle}`, {});
   }
 
-  getAttendee(meetingId: string, attendeeId: string) {
-    return this.http.get(`${this.baseUrl}meeting/getAttendee/${meetingId}/${attendeeId}`);
+  getAttendee(meetingId: string, attendeeId: string, name: string) {
+    return this.http.get(`${this.baseUrl}meeting/getAttendee/${meetingId}/${attendeeId}/${name}`);
   }
 }

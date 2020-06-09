@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using DatingApp.API.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -27,6 +28,18 @@ namespace DatingApp.API
         // This method gets called by the runtime. Use this method to add services to the container. This is the dependency injection container.
         public void ConfigureServices(IServiceCollection services)
         {
+            // https://stackoverflow.com/questions/49770491/session-variable-value-is-getting-null-in-asp-net-core in order to keep session state
+            services.Configure<CookiePolicyOptions>(options =>
+            {
+                // This lambda determines whether user consent for non-essential cookies is needed for a given request.
+                options.CheckConsentNeeded = context => true;
+                options.MinimumSameSitePolicy = SameSiteMode.None;
+            });
+            services.AddDistributedMemoryCache();
+            services.AddSession(options => {
+                options.Cookie.IsEssential = true;
+                options.IdleTimeout = TimeSpan.FromMinutes(60);//You can set Time   
+            });
             services.AddDbContext<DataContext>(x => x.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
             services.AddControllers();
             services.AddScoped<IAuthRepository, AuthRepository>();
@@ -53,6 +66,8 @@ namespace DatingApp.API
 
             //authorization middleware
             app.UseAuthorization();
+
+            app.UseSession();
 
             app.UseEndpoints(endpoints =>
             {

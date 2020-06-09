@@ -15,6 +15,8 @@ namespace DatingApp.API.Controllers
     {
         private readonly IChimeRepository _chimeRepo;
 
+        const string MeetingId = "_MeetingId";
+
         public MeetingController(IChimeRepository chimeRepo)
         {
             _chimeRepo = chimeRepo;
@@ -39,9 +41,18 @@ namespace DatingApp.API.Controllers
         [HttpPost("joinMeeting/{mediaRegion}/{meetingTitle}")]
         public async Task<IActionResult> JoinMeeting(string mediaRegion, string meetingTitle)
         {
-            var reqMeetingBody = new { ClientRequestToken = Guid.NewGuid(), MediaRegion = mediaRegion };
+            MeetingDto meetingResponse;
+            // to do remove this later, for now save meetingId in session so it won't create a meeting every time an attendee joins an existing meeting
+            if (!Guid.TryParse(meetingTitle, out var newGuid))
+            {
+                var reqMeetingBody = new { ClientRequestToken = Guid.NewGuid(), MediaRegion = mediaRegion };
 
-            var meetingResponse = await _chimeRepo.CreateMeeting(reqMeetingBody);
+                meetingResponse = await _chimeRepo.CreateMeeting(reqMeetingBody);
+            }
+            else
+            {
+                meetingResponse = await _chimeRepo.GetMeeting(newGuid.ToString());
+            }
 
             var reqAttendeeBody = new { ExternalUserId = Guid.NewGuid() };
 
@@ -50,10 +61,11 @@ namespace DatingApp.API.Controllers
             return Ok(new { JoinInfo = new JoinInfo() { Meeting = meetingResponse.Meeting, Attendee = attendeeResponse.Attendee, Title = meetingTitle } });
         }
 
-        [HttpGet("getAttendee/{meetingId}/{attendeeId}")]
-        public async Task<IActionResult> GetAttendee(string meetingId, string attendeeId)
+        [HttpGet("getAttendee/{meetingId}/{attendeeId}/{name}")]
+        public async Task<IActionResult> GetAttendee(string meetingId, string attendeeId, string name)
         {
-            return Ok(await _chimeRepo.GetAttendee(meetingId, attendeeId));
+            var objectToReturn = new { AttendeeInfo = await _chimeRepo.GetAttendee(meetingId, attendeeId), AttendeeName = name };
+            return Ok(objectToReturn);
         }
     }
 }
