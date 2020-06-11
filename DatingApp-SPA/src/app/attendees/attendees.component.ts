@@ -6,7 +6,6 @@ import {
   ClientMetricReport,
   ConsoleLogger,
   DefaultActiveSpeakerPolicy,
-  DefaultAudioMixController,
   DefaultDeviceController,
   DefaultMeetingSession,
   Device,
@@ -28,6 +27,10 @@ import {
 } from 'amazon-chime-sdk-js';
 import { ChimeService } from '../_services/chime.service';
 import './style.scss'
+import { JoinInfoDto } from '../_models/JoinInfoDto';
+import { NameDto } from '../_models/NameDto';
+import { DemoTileOrganizer } from '../_utils/DemoTileOrganizer';
+import { TestSound } from '../_utils/TestSound';
 
 @Component({
   selector: 'app-attendees',
@@ -72,7 +75,6 @@ export class AttendeesComponent implements OnInit, AudioVideoObserver, DeviceCha
     'button-screen-view': false,
   };
 
-  // feature flags
   enableWebAudio = false;
 
   constructor(private chimeService: ChimeService) {
@@ -145,7 +147,6 @@ export class AttendeesComponent implements OnInit, AudioVideoObserver, DeviceCha
             this.log('no video input device selected');
           }
           await this.openAudioOutputFromSelection();
-          // this.hideProgress('progress-authenticate');
         }
       );
     });
@@ -593,11 +594,11 @@ export class AttendeesComponent implements OnInit, AudioVideoObserver, DeviceCha
             this.roster[attendeeId].signalStrength = Math.round(signalStrength * 100);
           }
           if (!this.roster[attendeeId].name) {
-            // COSTIN: TO DO get attendee name from a meeting record in DataBase and replace the attendeeId
-            this.roster[attendeeId].name = attendeeId ?  attendeeId: '';
+            const response = this.chimeService.getAttendee(attendeeId).toPromise();
+            const json = await response as NameDto;
+            this.roster[attendeeId].name = json.attendeeName ?  json.attendeeName: '';
           }
           this.updateRoster();
-          console.log('COSTIN ROSTER', this.roster);
         }
       );
     };
@@ -630,11 +631,11 @@ export class AttendeesComponent implements OnInit, AudioVideoObserver, DeviceCha
     );
   }
 
-  // eslint-disable-next-line
   async joinMeeting(): Promise<any> {
-    const response = this.chimeService.joinMeeting(this.region, this.meeting).toPromise();
-    const json = await response;
-    const objectToReturn = {
+    const response = this.chimeService.joinMeeting(this.region, this.meeting, this.name).toPromise();
+    const json = await response as JoinInfoDto;
+    let objectToReturn: any = {};
+    objectToReturn = {
       JoinInfo: {
         Meeting: {
           MeetingId: json.joinInfo.meeting.meetingId,
@@ -655,8 +656,7 @@ export class AttendeesComponent implements OnInit, AudioVideoObserver, DeviceCha
       }
     }
     this.meetingInfo = objectToReturn;
-    alert('COSTIN meetingId: ' + objectToReturn.JoinInfo.Meeting.MeetingId);
-    alert('COSTIN attendeeId: ' + objectToReturn.JoinInfo.Attendee.AttendeeId);
+    alert('Pass this meetingId to join this meeting: ' + objectToReturn.JoinInfo.Meeting.MeetingId);
     return objectToReturn;
   }
 
@@ -669,20 +669,6 @@ export class AttendeesComponent implements OnInit, AudioVideoObserver, DeviceCha
   }
 
   setupDeviceLabelTrigger(): void {
-    // Note that device labels are privileged since they add to the
-    // fingerprinting surface area of the browser session. In Chrome private
-    // tabs and in all Firefox tabs, the labels can only be read once a
-    // MediaStream is active. How to deal with this restriction depends on the
-    // desired UX. The device controller includes an injectable device label
-    // trigger which allows you to perform custom behavior in case there are no
-    // labels, such as creating a temporary audio/video stream to unlock the
-    // device names, which is the default behavior. Here we override the
-    // trigger to also show an alert to let the user know that we are asking for
-    // mic/camera permission.
-    //
-    // Also note that Firefox has its own device picker, which may be useful
-    // for the first device selection. Subsequent device selections could use
-    // a custom UX with a specific device id.
     this.audioVideo.setDeviceLabelTrigger(
       async (): Promise<MediaStream> => {
         this.switchToFlow('flow-need-permission');
@@ -790,7 +776,6 @@ export class AttendeesComponent implements OnInit, AudioVideoObserver, DeviceCha
   async populateAudioInputList(): Promise<void> {
     const genericName = 'Microphone';
     const additionalDevices = ['None', '440 Hz'];
-    const audioddd = await this.audioVideo.listAudioInputDevices();
     this.populateDeviceList(
       'audio-input',
       genericName,
@@ -973,31 +958,10 @@ export class AttendeesComponent implements OnInit, AudioVideoObserver, DeviceCha
     const tileElement = document.getElementById(`tile-${tileIndex}`) as HTMLDivElement;
     const videoElement = document.getElementById(`video-${tileIndex}`) as HTMLVideoElement;
     const nameplateElement = document.getElementById(`nameplate-${tileIndex}`) as HTMLDivElement;
-
-    const pauseButtonElement = document.getElementById(
-      `video-pause-${tileIndex}`
-    ) as HTMLButtonElement;
-    const resumeButtonElement = document.getElementById(
-      `video-resume-${tileIndex}`
-    ) as HTMLButtonElement;
-
-    pauseButtonElement.addEventListener('click', () => {
-      if (!tileState.paused) {
-        this.audioVideo.pauseVideoTile(tileState.tileId);
-      }
-    });
-
-    resumeButtonElement.addEventListener('click', () => {
-      if (tileState.paused) {
-        this.audioVideo.unpauseVideoTile(tileState.tileId);
-      }
-    });
-
     this.log(`binding video tile ${tileState.tileId} to ${videoElement.id}`);
     this.audioVideo.bindVideoElement(tileState.tileId, videoElement);
     this.tileIndexToTileId[tileIndex] = tileState.tileId;
     this.tileIdToTileIndex[tileState.tileId] = tileIndex;
-    // TODO: enforce roster names
     new TimeoutScheduler(200).start(() => {
       const rosterName = this.roster[tileState.boundAttendeeId]
         ? this.roster[tileState.boundAttendeeId].name
@@ -1180,43 +1144,6 @@ export class AttendeesComponent implements OnInit, AudioVideoObserver, DeviceCha
     nameplate.style.textShadow = '0px 0px 5px black';
     nameplate.style.letterSpacing = '0.1em';
     nameplate.style.fontSize = `${nameplateSize - 6}px`;
-
-    let button = document.getElementById(`video-pause-${tileIndex}`) as HTMLButtonElement;
-
-    if (button) {
-      button.style.position = 'absolute';
-      button.style.display = 'inline-block';
-      button.style.right = '0px';
-      // button.style.top = `${h - nameplateSize - nameplatePadding}px`;
-      button.style.height = `${nameplateSize}px`;
-      // button.style.width = `${w}px`;
-      button.style.margin = '0';
-      button.style.padding = '0';
-      button.style.paddingLeft = `${nameplatePadding}px`;
-      button.style.color = '#fff';
-      button.style.backgroundColor = 'rgba(0,0,0,0)';
-      button.style.textShadow = '0px 0px 5px black';
-      button.style.letterSpacing = '0.1em';
-      button.style.fontSize = `${nameplateSize - 6}px`;
-    }
-
-    button = document.getElementById(`video-resume-${tileIndex}`) as HTMLButtonElement;
-
-    if (button) {
-      button.style.position = 'absolute';
-      button.style.left = '0px';
-      button.style.top = '0px';
-      button.style.height = `${nameplateSize}px`;
-      // button.style.width = `${w}px`;
-      button.style.margin = '0';
-      button.style.padding = '0';
-      button.style.paddingLeft = `${nameplatePadding}px`;
-      button.style.color = '#fff';
-      button.style.backgroundColor = 'rgba(0,0,0,0)';
-      button.style.textShadow = '0px 0px 5px black';
-      button.style.letterSpacing = '0.1em';
-      button.style.fontSize = `${nameplateSize - 6}px`;
-    }
   }
 
   layoutVideoTilesGrid(visibleTileIndices: number[]): void {
@@ -1267,71 +1194,5 @@ export class AttendeesComponent implements OnInit, AudioVideoObserver, DeviceCha
 
   videoSendDidBecomeUnavailable(): void {
     this.log('sending video is not available');
-  }
-}
-
-class DemoTileOrganizer {
-  private static MAX_TILES = 16;
-  private tiles: { [id: number]: number } = {};
-  public tileStates: { [id: number]: boolean } = {};
-
-  acquireTileIndex(tileId: number): number {
-    for (let index = 0; index < DemoTileOrganizer.MAX_TILES; index++) {
-      if (this.tiles[index] === tileId) {
-        return index;
-      }
-    }
-    for (let index = 0; index < DemoTileOrganizer.MAX_TILES; index++) {
-      if (!(index in this.tiles)) {
-        this.tiles[index] = tileId;
-        return index;
-      }
-    }
-    throw new Error('no tiles are available');
-  }
-
-  releaseTileIndex(tileId: number): number {
-    for (let index = 0; index < DemoTileOrganizer.MAX_TILES; index++) {
-      if (this.tiles[index] === tileId) {
-        delete this.tiles[index];
-        return index;
-      }
-    }
-    return DemoTileOrganizer.MAX_TILES;
-  }
-}
-
-class TestSound {
-  constructor(
-    sinkId: string | null,
-    frequency: number = 440,
-    durationSec: number = 1,
-    rampSec: number = 0.1,
-    maxGainValue: number = 0.1
-  ) {
-    // @ts-ignore
-    const audioContext: AudioContext = new (window.AudioContext || window.webkitAudioContext)();
-    const gainNode = audioContext.createGain();
-    gainNode.gain.value = 0;
-    const oscillatorNode = audioContext.createOscillator();
-    oscillatorNode.frequency.value = frequency;
-    oscillatorNode.connect(gainNode);
-    const destinationStream = audioContext.createMediaStreamDestination();
-    gainNode.connect(destinationStream);
-    const currentTime = audioContext.currentTime;
-    const startTime = currentTime + 0.1;
-    gainNode.gain.linearRampToValueAtTime(0, startTime);
-    gainNode.gain.linearRampToValueAtTime(maxGainValue, startTime + rampSec);
-    gainNode.gain.linearRampToValueAtTime(maxGainValue, startTime + rampSec + durationSec);
-    gainNode.gain.linearRampToValueAtTime(0, startTime + rampSec * 2 + durationSec);
-    oscillatorNode.start();
-    const audioMixController = new DefaultAudioMixController();
-    // @ts-ignore
-    audioMixController.bindAudioDevice({ deviceId: sinkId });
-    audioMixController.bindAudioElement(new Audio());
-    audioMixController.bindAudioStream(destinationStream.stream);
-    new TimeoutScheduler((rampSec * 2 + durationSec + 1) * 1000).start(() => {
-      audioContext.close();
-    });
   }
 }

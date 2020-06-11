@@ -8,6 +8,7 @@ namespace DatingApp.API.Models
     public class Value
     {
         public int Id { get; set; }
+        public Guid AttendeeId { get; set; }
         public string Name { get; set; }
     }
 }

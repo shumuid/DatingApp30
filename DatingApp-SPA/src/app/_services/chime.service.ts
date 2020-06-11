@@ -18,11 +18,14 @@ constructor(private http: HttpClient) { }
     return this.http.post(`${this.baseUrl}meeting/createAttendee/${meetingId}`, {});
   }
 
-  joinMeeting(mediaRegion: string, meetingTitle: string) {
-    return this.http.post(`${this.baseUrl}meeting/joinMeeting/${mediaRegion}/${meetingTitle}`, {});
+  joinMeeting(mediaRegion: string, meetingTitle: string, attendeeName: string) {
+    return this.http.post(`${this.baseUrl}meeting/joinMeeting/${mediaRegion}/${meetingTitle}/${attendeeName}`, {});
   }
 
-  getAttendee(meetingId: string, attendeeId: string, name: string) {
-    return this.http.get(`${this.baseUrl}meeting/getAttendee/${meetingId}/${attendeeId}/${name}`);
+  // getAttendee(meetingId: string, attendeeId: string, name: string) {
+  //   return this.http.get(`${this.baseUrl}meeting/getAttendee/${meetingId}/${attendeeId}/${name}`);
+  // }
+  getAttendee(attendeeId: string,) {
+     return this.http.get(`${this.baseUrl}meeting/getAttendee/${attendeeId}`);
   }
 }
