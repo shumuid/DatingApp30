@@ -3,7 +3,7 @@
       <div class="text-muted" style="position:fixed;right:3px;bottom:3px" id="sdk-version"></div>
       <div class="container">
         <form id="form-authenticate">
-          <h1 class="h3 mb-3 font-weight-normal">Join a meeting</h1>
+          <h1 class="h3 mb-3 font-weight-normal mt-3">Join a meeting</h1>
           <div class="row mt-3">
             <label for="inputMeeting" class="sr-only">Meeting ID</label>
             <input type="name" id="inputMeeting" class="form-control" placeholder="Meeting ID" required autofocus>
@@ -32,7 +32,7 @@
             </select>
           </div>
           <div class="row mt-3">
-            <button id="authenticate" class="btn btn-lg btn-primary btn-block" type="submit">Continue</button>
+            <button id="authenticate" class="btn btn-lg btn-outline-success btn-block" type="submit">Continue</button>
           </div>
         </form>
       </div>
@@ -74,14 +74,15 @@
     <div id="flow-devices" class="flow">
       <div class="container">
         <form id="form-devices">
-          <h1 class="h3 mb-3 font-weight-normal text-center">Select devices</h1>
+          <h1 class="h3 mb-3 font-weight-normal text-center mt-3">Select devices</h1>
           <div class="row mt-3">
             <div class="col-8">
-              <label for="audio-input">Microphone</label>
+              <label for="audio-input" class="font-weight-bold">Microphone</label>
+              <br>
               <select id="audio-input" class="custom-select" style="width:308px"></select>
             </div>
             <div class="text-center col-4">
-              <label>Preview</label>
+              <label class="font-weight-bold">Preview</label>
               <div class="w-100 progress" style="margin-top:0.75rem">
                 <div id="audio-preview" class="progress-bar bg-success" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
               </div>
@@ -89,25 +90,27 @@
           </div>
           <div class="row mt-3">
             <div class="col-8">
-              <label for="video-input">Camera</label>
+              <label for="video-input" class="font-weight-bold">Camera</label>
+              <br>
               <select id="video-input" class="custom-select" style="width:308px"></select>
-            </div>
-            <div class="col-4 text-center" style="width:137px;height:82px">
-              <video id="video-preview" class="w-100 h-100" style="max-width:137px;max-height:82px;border-radius:8px"></video>
-            </div>
-          </div>
-          <div class="row mt-3">
-            <div class="col-8">
+              <br>
+              <br>
+              <label for="video-input" class="font-weight-bold">Video quality</label>
+              <br>
               <select id="video-input-quality" class="custom-select" style="width:308px">
                 <option value="360p">360p (nHD) @ 15 fps (600 Kbps max)</option>
                 <option value="540p" selected>540p (qHD) @ 15 fps (1.4 Mbps max)</option>
                 <option value="720p">720p (HD) @ 15 fps (1.4 Mbps max)</option>
               </select>
             </div>
+            <div class="col-4 text-center" style="width:340px;">
+              <video id="video-preview" class="w-100 h-100" style="max-width:340px;border-radius:8px"></video>
+            </div>
           </div>
           <div class="row mt-3">
             <div class="col-8">
-              <label for="audio-output">Speaker</label>
+              <label for="audio-output" class="font-weight-bold">Speaker</label>
+              <br>
               <select id="audio-output" class="custom-select" style="width:308px"></select>
             </div>
             <div class="col-4">
@@ -116,7 +119,7 @@
           </div>
           <div class="row mt-3">
             <div class="col-lg">
-              <button id="joinButton" class="btn btn-lg btn-primary btn-block" type="submit">Join</button>
+              <button id="joinButton" class="btn btn-lg btn-outline-success btn-block" type="submit">Join</button>
             </div>
           </div>
           <div class="row mt-3">
@@ -136,47 +139,39 @@
       <audio id="meeting-audio" style="display:none"></audio>
       <div class="container-fluid h-100">
         <div class="row">
-          <div class="col-1 text-left">
+          <div class="col-9 text-left">
             <div id="meeting-id" class="navbar-brand text-muted m-2"></div>
-          </div>
-          <div class="col-5 text-right">
-            <div class="btn-group m-2" role="group" aria-label="Toggle microphone">
-              <button id="button-microphone" type="button" class="btn btn-success" title="Toggle microphone">
+            <div>
+              <button id="button-microphone" type="button" class="btn btn-success m-2" title="Toggle microphone">
                 <i class="fa fa-microphone"></i>
               </button>
-            </div>
-            <div class="btn-group m-2" role="group" aria-label="Toggle camera">
-              <button id="button-camera" type="button" class="btn btn-success" title="Camera">
+              <button id="button-camera" type="button" class="btn btn-success m-2" title="Camera">
                 <i class="fa fa-video-camera"></i>
               </button>
+              <button id="button-screen-share" type="button" class="btn btn-outline-secondary m-2" title="Screen share">
+                <i class="fa fa-laptop"></i>
+              </button>
+              <button id="button-screen-view" type="button" class="btn btn-outline-secondary m-2" title="View screen share">
+                <i class="fa fa-eye"></i>
+              </button>
+              <button id="button-meeting-leave" type="button" class="btn btn-outline-success m-2" title="Leave meeting">
+                <i class="fa fa-blind"></i>
+              </button>
+              <button id="button-meeting-end" type="button" class="btn btn-outline-danger m-2" title="End meeting">
+                <i class="fa fa-window-close"></i>
+              </button>
             </div>
-            <button id="button-screen-share" type="button" class="btn btn-outline-secondary m-2" title="Screen share">
-              <i class="fa fa-laptop"></i>
-            </button>
-          </div>
-          <div class="col-4 text-left">
-            <button id="button-screen-view" type="button" class="btn btn-outline-secondary m-2" title="View screen share">
-              <i class="fa fa-eye"></i>
-            </button>
-          </div>
-          <div class="col-2 text-right">
-            <button id="button-meeting-leave" type="button" class="btn btn-outline-success m-2 px-4" title="Leave meeting">
-              <i class="fa fa-blind"></i>
-            </button>
-            <button id="button-meeting-end" type="button" class="btn btn-outline-danger m-2 px-4" title="End meeting">
-              <i class="fa fa-window-close"></i>
-            </button>
           </div>
         </div>
         <div class="row h-100">
-          <div class="col-sm-4">
+          <div class="col-sm-3 mr-3">
             <div class="bs-component">
               <ul id="roster" class="list-group"></ul>
             </div>
           </div>
-          <div class="col p-0">
-            <div id="tile-area" class="w-100 h-100">
-              <div id="tile-0" style="display:none">
+          <div class="col p-0" style="margin-top: 160px;">
+            <div id="tile-area" class="w-50 h-50">
+              <div id="tile-0" style="display:none" style="border: 0px solid transparent;">
                 <video id="video-0" class="w-100 h-100"></video>
                 <div id="nameplate-0"></div>
               </div>

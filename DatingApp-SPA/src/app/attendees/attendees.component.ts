@@ -962,7 +962,7 @@ export class AttendeesComponent implements OnInit, AudioVideoObserver, DeviceCha
     this.audioVideo.bindVideoElement(tileState.tileId, videoElement);
     this.tileIndexToTileId[tileIndex] = tileState.tileId;
     this.tileIdToTileIndex[tileState.tileId] = tileIndex;
-    new TimeoutScheduler(200).start(() => {
+    new TimeoutScheduler(1600).start(() => {
       const rosterName = this.roster[tileState.boundAttendeeId]
         ? this.roster[tileState.boundAttendeeId].name
         : '';
@@ -1121,7 +1121,7 @@ export class AttendeesComponent implements OnInit, AudioVideoObserver, DeviceCha
     if (video) {
       video.style.position = 'absolute';
       video.style.left = '0';
-      video.style.top = '0';
+      video.style.top = '40px';
       video.style.width = `${w}px`;
       video.style.height = `${h}px`;
       video.style.margin = '0';
@@ -1154,7 +1154,8 @@ export class AttendeesComponent implements OnInit, AudioVideoObserver, DeviceCha
     let columns = 1;
     let totalHeight = 0;
     let rowHeight = 0;
-    for (; columns < 18; columns++) {
+    // changed columns < 18
+    for (; columns < 3; columns++) {
       const rows = Math.ceil(visibleTileIndices.length / columns);
       rowHeight = width / columns / widthToHeightAspectRatio;
       totalHeight = rowHeight * rows;
