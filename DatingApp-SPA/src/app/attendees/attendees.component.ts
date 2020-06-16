@@ -38,7 +38,6 @@ import { TestSound } from '../_utils/TestSound';
   styleUrls: ['./attendees.component.css']
 })
 export class AttendeesComponent implements OnInit, AudioVideoObserver, DeviceChangeObserver {
-  static readonly DID: string = '+17035550122';
   static readonly BASE_URL: string = [
     location.protocol,
     '//',
@@ -57,13 +56,11 @@ export class AttendeesComponent implements OnInit, AudioVideoObserver, DeviceCha
   meetingSession: MeetingSession | null = null;
   audioVideo: AudioVideoFacade | null = null;
   tileOrganizer: DemoTileOrganizer = new DemoTileOrganizer();
-  canStartLocalVideo: boolean = true;
-  // eslint-disable-next-line
+  canStartLocalVideo = true;
   roster: any = {};
   tileIndexToTileId: { [id: number]: number } = {};
   tileIdToTileIndex: { [id: number]: number } = {};
   chimeMeetingId: string;
-
   cameraDeviceIds: string[] = [];
   microphoneDeviceIds: string[] = [];
   meetingInfo: any = {};
@@ -660,7 +657,6 @@ export class AttendeesComponent implements OnInit, AudioVideoObserver, DeviceCha
     return objectToReturn;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async endMeeting(): Promise<any> {
     // to do end meeting logic
     // await fetch(`${DemoMeetingApp.BASE_URL}end?title=${encodeURIComponent(this.meeting)}`, {

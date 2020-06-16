@@ -22,7 +22,7 @@ namespace DatingApp.API.Controllers
             _meetingRepo = meetingRepo;
         }
 
-        [HttpPost("createMeeting/{mediaRegion}")]
+        [HttpPost("createMeeting")]
         public async Task<IActionResult> CreateMeeting(string mediaRegion)
         {
             var reqMeetingBody = new { ClientRequestToken = Guid.NewGuid(), MediaRegion = mediaRegion };
@@ -38,7 +38,8 @@ namespace DatingApp.API.Controllers
             return Ok(await _chimeRepo.CreateAttendee(reqAttendeeBody, meetingId));
         }
 
-        [HttpPost("joinMeeting/{mediaRegion}/{meetingTitle}/{attendeeName}")]
+        //[HttpPost("joinMeeting/{mediaRegion}/{meetingTitle}/{attendeeName}")]
+        [HttpPost("joinMeeting")]
         public async Task<IActionResult> JoinMeeting(string mediaRegion, string meetingTitle, string attendeeName)
         {
             MeetingDto meetingResponse;
@@ -69,7 +70,8 @@ namespace DatingApp.API.Controllers
 
         //[HttpGet("getAttendee/{meetingId}/{attendeeId}/{name}")]
         //public async Task<IActionResult> GetAttendee(string meetingId, string attendeeId, string name)
-        [HttpGet("getAttendee/{attendeeId}")]
+        //[HttpGet("getAttendee/{attendeeId}")]
+        [HttpGet("getAttendee")]
         public async Task<IActionResult> GetAttendee(string attendeeId)
         {
             //var objectToReturn = new { AttendeeInfo = await _chimeRepo.GetAttendee(meetingId, attendeeId), AttendeeName = name };
