@@ -33,6 +33,7 @@ namespace DatingApp.API
             services.AddScoped<IAuthRepository, AuthRepository>();
             services.AddScoped<IChimeRepository, ChimeRepository>();
             services.AddScoped<IMeetingRepository, MeetingRepository>();
+            services.AddCors();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -44,17 +45,24 @@ namespace DatingApp.API
             {
                 app.UseDeveloperExceptionPage();
             }
+            else
+            {
+                app.UseExceptionHandler("/Error");
+                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+                app.UseHsts();
+            }
 
-            //app.UseHttpsRedirection();
+            app.UseHttpsRedirection();
 
             //routing middleware
             app.UseRouting();
 
+            //authorization middleware
+            //app.UseAuthorization();
+
             //CORS cross-origin resource sharing middleware
             app.UseCors(x => x.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
-
-            //authorization middleware
-            app.UseAuthorization();
+            //app.UseCors();
 
             app.UseEndpoints(endpoints =>
             {

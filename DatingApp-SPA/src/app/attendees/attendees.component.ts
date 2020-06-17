@@ -31,6 +31,7 @@ import { JoinInfoDto } from '../_models/JoinInfoDto';
 import { NameDto } from '../_models/NameDto';
 import { DemoTileOrganizer } from '../_utils/DemoTileOrganizer';
 import { TestSound } from '../_utils/TestSound';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-attendees',
@@ -45,7 +46,7 @@ export class AttendeesComponent implements OnInit, AudioVideoObserver, DeviceCha
     location.pathname.replace(/\/*$/, '/'),
   ].join('');
   static readonly LOGGER_BATCH_SIZE: number = 85;
-  static readonly LOGGER_INTERVAL_MS: number = 1150;
+  static readonly LOGGER_INTERVAL_MS: number = 11500;
 
   showActiveSpeakerScores = false;
   activeSpeakerLayout = true;
@@ -454,7 +455,7 @@ export class AttendeesComponent implements OnInit, AudioVideoObserver, DeviceCha
         configuration,
         AttendeesComponent.LOGGER_BATCH_SIZE,
         AttendeesComponent.LOGGER_INTERVAL_MS,
-        `${AttendeesComponent.BASE_URL}logs`,
+        `${environment.apiUrl}meeting/logs`,
         LogLevel.INFO
       );
     }

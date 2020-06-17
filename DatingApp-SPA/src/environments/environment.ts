@@ -4,8 +4,8 @@
 
 export const environment = {
   production: false,
-  apiUrl: 'https://webtestsqa/ChimeMeetingApiDemo/api/'
-  // apiUrl: 'http://localhost:5000/api/'
+  // apiUrl: 'https://webtestsqa.org/ChimeMeetingApiDemo/api/'
+  apiUrl: 'http://localhost:5000/api/'
 };
 
 /*

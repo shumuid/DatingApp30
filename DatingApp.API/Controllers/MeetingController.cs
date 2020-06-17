@@ -68,6 +68,12 @@ namespace DatingApp.API.Controllers
             return Ok(new { JoinInfo = new JoinInfo() { Meeting = meetingResponse.Meeting, Attendee = attendeeResponse.Attendee, Title = meetingTitle } });
         }
 
+        [HttpPost("logs")]
+        public async Task<IActionResult> Logs()
+        {
+            return Ok("Successfully logged something");
+        }
+
         //[HttpGet("getAttendee/{meetingId}/{attendeeId}/{name}")]
         //public async Task<IActionResult> GetAttendee(string meetingId, string attendeeId, string name)
         //[HttpGet("getAttendee/{attendeeId}")]
