@@ -447,9 +447,9 @@ export class AttendeesComponent implements OnInit, AudioVideoObserver, DeviceCha
 
   async initializeMeetingSession(configuration: MeetingSessionConfiguration): Promise<void> {
     let logger: Logger;
-    if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
-      logger = new ConsoleLogger('SDK', LogLevel.INFO);
-    } else {
+    // if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
+    //   logger = new ConsoleLogger('SDK', LogLevel.INFO);
+    // } else {
       logger = new MeetingSessionPOSTLogger(
         'SDK',
         configuration,
@@ -458,7 +458,7 @@ export class AttendeesComponent implements OnInit, AudioVideoObserver, DeviceCha
         `${environment.apiUrl}meeting/logs`,
         LogLevel.INFO
       );
-    }
+    // }
     const deviceController = new DefaultDeviceController(logger);
     configuration.enableWebAudio = this.enableWebAudio;
     this.meetingSession = new DefaultMeetingSession(configuration, logger, deviceController);
@@ -1038,10 +1038,10 @@ export class AttendeesComponent implements OnInit, AudioVideoObserver, DeviceCha
       if (tileElement.style.display === 'block') {
         if (tileIndex === screenViewTileIndex) {
           // Hide videos when viewing screen
-          for (const tile of tiles) {
-            const tileToSuppress = document.getElementById(`tile-${tile}`) as HTMLDivElement;
-            tileToSuppress.style.visibility = 'hidden';
-          }
+          // for (const tile of tiles) {
+          //   const tileToSuppress = document.getElementById(`tile-${tile}`) as HTMLDivElement;
+          //   tileToSuppress.style.visibility = 'hidden';
+          // }
           tiles = [screenViewTileIndex];
         } else {
           tiles.push(tileIndex);
@@ -1104,43 +1104,58 @@ export class AttendeesComponent implements OnInit, AudioVideoObserver, DeviceCha
 
   updateTilePlacement(tileIndex: number, x: number, y: number, w: number, h: number): void {
     const tile = document.getElementById(`tile-${tileIndex}`) as HTMLDivElement;
-    const insetWidthSize = 4;
-    const insetHeightSize = insetWidthSize / (16 / 9);
-    tile.style.position = 'absolute';
-    tile.style.left = `${x + insetWidthSize}px`;
-    tile.style.top = `${y + insetHeightSize}px`;
-    tile.style.width = `${w - insetWidthSize * 2}px`;
-    tile.style.height = `${h - insetHeightSize * 2}px`;
-    tile.style.margin = '0';
-    tile.style.padding = '0';
-    tile.style.visibility = 'visible';
-    const video = document.getElementById(`video-${tileIndex}`) as HTMLDivElement;
-    if (video) {
-      video.style.position = 'absolute';
-      video.style.left = '0';
-      video.style.top = '40px';
-      video.style.width = `${w}px`;
-      video.style.height = `${h}px`;
-      video.style.margin = '0';
-      video.style.padding = '0';
-      video.style.borderRadius = '8px';
+    if(tileIndex !== 17)
+    {
+      const insetWidthSize = 4;
+      const insetHeightSize = insetWidthSize / (16 / 9);
+      tile.style.position = 'absolute';
+      tile.style.left = `${x + insetWidthSize}px`;
+      tile.style.top = `${y + insetHeightSize}px`;
+      tile.style.width = `${w - insetWidthSize * 2}px`;
+      tile.style.height = `${h - insetHeightSize * 2}px`;
+      tile.style.margin = '0';
+      tile.style.padding = '0';
+      tile.style.visibility = 'visible';
+      const video = document.getElementById(`video-${tileIndex}`) as HTMLDivElement;
+      if (video) {
+        // video.style.position = 'absolute';
+        // video.style.left = '0';
+        // video.style.top = '40px';
+        video.style.width = `${w}px`;
+        video.style.height = `${h}px`;
+        video.style.margin = '0';
+        video.style.padding = '0';
+        video.style.borderRadius = '8px';
+      }
+      const nameplate = document.getElementById(`nameplate-${tileIndex}`) as HTMLDivElement;
+      const nameplateSize = 24;
+      const nameplatePadding = 10;
+      nameplate.style.position = 'absolute';
+      nameplate.style.left = '0px';
+      nameplate.style.top = `${h - nameplateSize - nameplatePadding}px`;
+      nameplate.style.height = `${nameplateSize}px`;
+      nameplate.style.width = `${w}px`;
+      nameplate.style.margin = '0';
+      nameplate.style.padding = '0';
+      nameplate.style.paddingLeft = `${nameplatePadding}px`;
+      nameplate.style.color = '#fff';
+      nameplate.style.backgroundColor = 'rgba(0,0,0,0)';
+      nameplate.style.textShadow = '0px 0px 5px black';
+      nameplate.style.letterSpacing = '0.1em';
+      nameplate.style.fontSize = `${nameplateSize - 6}px`;
     }
-    const nameplate = document.getElementById(`nameplate-${tileIndex}`) as HTMLDivElement;
-    const nameplateSize = 24;
-    const nameplatePadding = 10;
-    nameplate.style.position = 'absolute';
-    nameplate.style.left = '0px';
-    nameplate.style.top = `${h - nameplateSize - nameplatePadding}px`;
-    nameplate.style.height = `${nameplateSize}px`;
-    nameplate.style.width = `${w}px`;
-    nameplate.style.margin = '0';
-    nameplate.style.padding = '0';
-    nameplate.style.paddingLeft = `${nameplatePadding}px`;
-    nameplate.style.color = '#fff';
-    nameplate.style.backgroundColor = 'rgba(0,0,0,0)';
-    nameplate.style.textShadow = '0px 0px 5px black';
-    nameplate.style.letterSpacing = '0.1em';
-    nameplate.style.fontSize = `${nameplateSize - 6}px`;
+    else
+    {
+      // tile.style.position = 'absolute';
+      // tile.style.right = '0px';
+      // tile.style.top = '0px';
+      tile.style.width = '700px';
+      tile.style.height = '400px';
+      tile.style.margin = '0';
+      tile.style.padding = '0';
+      tile.style.visibility = 'visible';
+      tile.style.resize = 'both';
+    }
   }
 
   layoutVideoTilesGrid(visibleTileIndices: number[]): void {

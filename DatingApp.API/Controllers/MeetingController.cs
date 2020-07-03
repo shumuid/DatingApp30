@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using DatingApp.API.Data;
@@ -69,7 +70,7 @@ namespace DatingApp.API.Controllers
         }
 
         [HttpPost("logs")]
-        public async Task<IActionResult> Logs()
+        public async Task<IActionResult> Logs([FromBody] ChimeLogger logger)
         {
             return Ok("Successfully logged something");
         }
